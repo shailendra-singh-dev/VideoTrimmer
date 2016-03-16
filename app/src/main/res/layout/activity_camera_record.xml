@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="ContentDescription,HardcodedText" >
+
+    <SurfaceView
+        android:id="@+id/surface"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
+
+    <ImageButton
+        android:id="@+id/buttonRecord"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_video_recording"
+        android:alpha="0.6"
+        android:background="@drawable/background_recording"
+        android:padding="5dp" >
+
+    </ImageButton>
+
+    <SeekBar
+        android:id="@+id/seekBarZoom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="45dp"
+        android:paddingRight="45dp"
+        android:layout_above="@+id/buttonRecord"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true" />
+
+    <ToggleButton
+        android:id="@+id/flash"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/background_flash"
+        android:layout_margin="6dp"
+        android:textOff=""
+        android:textOn=""
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true" />
+
+    <Button
+        android:id="@+id/buttonCameras"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="6dp"
+        android:background="@drawable/background_cameras"
+        android:text=""
+        android:visibility="visible"
+        android:layout_above="@+id/seekBarZoom"
+        android:layout_alignParentRight="true" />
+
+    <ImageView
+        android:id="@+id/Obturador"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:onClick="TakePicture"
+        android:src="@drawable/seek_thumb_normal"
+        android:visibility="gone"
+        android:layout_above="@+id/buttonCameras"
+        android:layout_alignParentRight="true" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/containerTimer"
+        android:padding="6dp"
+        android:layout_margin="8dp"
+        android:layout_below="@+id/Obturador"
+        android:layout_toRightOf="@+id/Obturador"
+        android:background="@color/black_transparent"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:src="@mipmap/ic_record_pressed"
+            android:layout_alignBottom="@+id/textTimer" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recording..."
+            android:id="@+id/textView"
+            android:textColor="@android:color/white"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/imageView" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="@android:color/white"
+            android:id="@+id/textTimer"
+            android:layout_below="@+id/textView"
+            android:layout_toRightOf="@+id/imageView" />
+    </RelativeLayout>
+
+</RelativeLayout>

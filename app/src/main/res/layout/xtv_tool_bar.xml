@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="@color/colorPrimary">
+
+    <TextView
+        android:id="@+id/edit_video_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignTop="@+id/title"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/edit_video_cancel"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/title_appbar"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/edit_video"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/title_appbar"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/edit_video_finish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/title"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="@string/edit_video_finish"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/title_appbar"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+
+</RelativeLayout>

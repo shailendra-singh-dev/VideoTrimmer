@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/xtv_tool_bar"
+        layout="@layout/xtv_tool_bar" />
+
+    <fragment
+        android:id="@+id/edit_video_panel"
+        android:name="com.itexico.xtv.fragments.EditVideoFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/xtv_tool_bar"
+        tools:layout="@layout/fragment_edit_video" />
+
+</RelativeLayout>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_background"
+    android:orientation="vertical"
+    android:padding="@dimen/padding_main_panel">
+
+    <RelativeLayout
+        android:id="@+id/playback_controller"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="top"
+        android:layout_marginBottom="@dimen/margin_main_panel"
+        android:layout_weight="1">
+
+        <VideoView
+            android:id="@+id/playback_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true" />
+
+        <ImageView
+            android:id="@+id/playback_current_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:background="@android:color/transparent"
+            android:scaleType="fitCenter" />
+
+        <ImageButton
+            android:id="@+id/playback_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@android:color/transparent"
+            android:scaleType="center"
+            android:src="@android:drawable/ic_media_play" />
+
+    </RelativeLayout>
+
+    <com.itexico.xtv.views.PlaybackSeekBar
+        android:id="@+id/playback_seek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_main_panel"
+        android:thumb="@drawable/seek_thumb_normal"
+        android:thumbOffset="@dimen/frames_progress_bar_thumb_offset"
+        android:indeterminate="false" />
+
+    <com.itexico.xtv.views.XTVFramesSeekBar
+        android:id="@+id/video_slice_seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginBottom="@dimen/margin_main_panel" />
+
+    <LinearLayout
+        android:id="@+id/playback_video_info"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_gravity="bottom"
+        android:background="@color/video_info"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_main_panel">
+
+        <TextView
+            android:id="@+id/original_video_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white" />
+
+        <TextView
+            android:id="@+id/edited_video_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+
+</LinearLayout>

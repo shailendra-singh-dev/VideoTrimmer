@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="fragment_edit_video_weightsum">8</integer>
+    <integer name="playback_controller_weight">3</integer>
+    <integer name="playback_seekbar_weight">1</integer>
+</resources>

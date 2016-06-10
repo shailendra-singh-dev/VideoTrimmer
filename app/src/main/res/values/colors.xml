@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="gray_background">#363B43</color>
+    <color name="gray_text">#ff888888</color>
+    <color name="video_info">#aa20252b</color>
+    <color name="red">#ff0000</color>
+    <color name="green">#00ff00</color>
+    <color name="blue">#0000ff</color>
+    <color name="blue_light">#00ffff</color>
+    <color name="white">#ffffff</color>
+    <color name="black_transparent">#7A000000</color>
+    <color name="red_transparent">#7AFF0000</color>
+
+    <!--Camera Record-->
+    <color name="portrait_mode_message">#424242</color>
+    <color name="portrait_mode_msg">@android:color/white</color>
+    <color name="cancel_button">#363B43</color>
+</resources>

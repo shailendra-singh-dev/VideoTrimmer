@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/VideoTrimming.iml" filepath="$PROJECT_DIR$/VideoTrimming.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Video_Trimming_Android_Module.iml" filepath="$PROJECT_DIR$/Video_Trimming_Android_Module.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/xtv_media_cutter/xtv_media_cutter.iml" filepath="$PROJECT_DIR$/xtv_media_cutter/xtv_media_cutter.iml" />
     </modules>
   </component>
 </project>

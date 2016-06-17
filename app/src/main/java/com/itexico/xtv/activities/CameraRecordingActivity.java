@@ -19,6 +19,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -72,12 +73,17 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
         super.onCreate(savedInstanceState);
         getWindow().setFormat(PixelFormat.TRANSLUCENT);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        Intent intent = getIntent();
+        cameraId = intent.getIntExtra("CAMERA_TYPE", 0);
+
         duration = getIntent().getIntExtra("duration", 0);
         screen_orientation = getResources().getConfiguration().orientation;
+
         Log.i(TAG, "screen_orientation:" + screen_orientation);
         setContentView(R.layout.activity_camera_record);
 
-        Camera.getCameraInfo(0, info);
+        Camera.getCameraInfo(cameraId, info);
         mySurfaceView = (SurfaceView) findViewById(R.id.surface);
         mySurfaceHolder = mySurfaceView.getHolder();
         mySurfaceHolder.addCallback(this);
@@ -125,6 +131,45 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
                 }
             });
         }
+
+        ImageButton changeCamera = (ImageButton) findViewById(R.id.change_camera);
+        if (null != changeCamera) {
+            changeCamera.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    //changeCamera();
+                }
+            });
+        }
+    }
+
+    public void changeCamera() {
+        if(cameraId == Camera.CameraInfo.CAMERA_FACING_BACK){
+            cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        }else {
+            cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        }
+        onCreate(null);
+        if (myCamera != null) {
+            if (myPreviewRunning) {
+                myCamera.stopPreview();
+                try {
+                    myCamera.setPreviewDisplay(null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                myCamera.release();
+                myPreviewRunning = false;
+                myCamera =null;
+            }
+            Intent intent = getIntent();
+            intent.putExtra("CAMERA_TYPE", cameraId);
+            finish();
+            overridePendingTransition(0, 0);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+        }
     }
 
     @Override
@@ -166,6 +211,11 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
 
     public void obtainParameters() {
         List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
+        List<Camera.Size> supportedVideoSizes = parameters.getSupportedVideoSizes();
+        for(final Camera.Size supportedVideo:supportedVideoSizes){
+            Log.i(TAG,"supportedVideoSize:"+supportedVideo.width +",x"+supportedVideo.height);
+        }
+
         Camera.Size optimalSize = getOptimalPreviewSize(sizes, CameraRecordingActivity.this.getResources().getDisplayMetrics().widthPixels, CameraRecordingActivity.this.getResources().getDisplayMetrics().heightPixels);
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
         if (isflashOn) {

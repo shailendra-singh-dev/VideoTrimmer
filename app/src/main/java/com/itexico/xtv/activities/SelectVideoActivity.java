@@ -1,12 +1,17 @@
 package com.itexico.xtv.activities;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.itexico.xtv.R;
@@ -17,7 +22,9 @@ public class SelectVideoActivity extends AppCompatActivity {
 
     private static final String TAG = SelectVideoActivity.class.getSimpleName();
     private static final int REQUEST_TAKE_GALLERY_VIDEO = 1000;
-    private RelativeLayout mXTVToolBar;
+    private static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 10;
+    private static final int REQUEST_CAMERA_PERMISSION = 101;
+    private Toolbar mXTVToolBar;
     private TextView mTitle;
     private String selectedVideoPath;
 
@@ -25,7 +32,7 @@ public class SelectVideoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_video);
-        mXTVToolBar = (RelativeLayout) findViewById(R.id.xtv_tool_bar);
+        mXTVToolBar = (Toolbar) findViewById(R.id.xtv_tool_bar);
         mTitle = (TextView) mXTVToolBar.findViewById(R.id.title);
         mTitle.setText(SCREEN.SELECT_VIDEO.getScreenName());
     }
@@ -52,17 +59,57 @@ public class SelectVideoActivity extends AppCompatActivity {
 
 
     public void openCameraRecording() {
+        final String[] permissionsForCameraRecording = new String[]{Manifest.permission.CAMERA,Manifest.permission.RECORD_AUDIO};
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Requesting Camera Permission");
+                builder.setMessage("This app requires permission to record video from Camera..");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        ActivityCompat.requestPermissions(SelectVideoActivity.this, permissionsForCameraRecording, REQUEST_CAMERA_PERMISSION);
+                    }
+                });
+                builder.show();
+            } else {
+                ActivityCompat.requestPermissions(SelectVideoActivity.this, permissionsForCameraRecording, REQUEST_CAMERA_PERMISSION);
+            }
+        } else {
+            openCameraRecordingView();
+        }
+    }
+
+    private void openCameraRecordingView(){
         mXTVToolBar.setVisibility(View.GONE);
         Intent intent = new Intent(this, CameraRecordingActivity.class);
         intent.putExtra("orientation", 0);
-        intent.putExtra("duration", 5);
+        intent.putExtra("duration", 70);
         startActivity(intent);
     }
 
     public void openGallery() {
-        //Request for Videos from Gallery..
-//                Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
-//                startActivityForResult(i, REQUEST_TAKE_GALLERY_VIDEO);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Requesting Read External Storage");
+                builder.setMessage("This app requires accesss to External Storage to get the Video for editing..");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        ActivityCompat.requestPermissions(SelectVideoActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE_PERMISSION);
+                    }
+                });
+                builder.show();
+            } else {
+                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE_PERMISSION);
+            }
+        } else {
+            openGalleryPicker();
+        }
+    }
+
+    private void openGalleryPicker(){
         Intent intent = new Intent();
         intent.setType("video/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -88,4 +135,17 @@ public class SelectVideoActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_READ_EXTERNAL_STORAGE_PERMISSION:
+                openGalleryPicker();
+                break;
+
+            case REQUEST_CAMERA_PERMISSION:
+                openCameraRecordingView();
+                break;
+        }
+    }
 }

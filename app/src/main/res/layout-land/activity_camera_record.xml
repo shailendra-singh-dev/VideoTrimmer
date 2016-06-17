@@ -15,6 +15,18 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true" />
 
+
+    <ImageButton
+        android:id="@+id/change_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.2"
+        android:src="@android:drawable/ic_menu_camera"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
+
+
     <com.itexico.xtv.views.CircleButton
         android:id="@+id/buttonRecord"
         android:layout_width="100dp"
@@ -42,6 +54,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/cancel_button"
         android:textSize="@dimen/record_cancel_text_size" />
+
 
     <RelativeLayout
         android:id="@+id/containerTimer"

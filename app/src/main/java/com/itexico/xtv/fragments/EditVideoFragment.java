@@ -75,11 +75,6 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
     private long mFileSize;
     private long mEditedVideoWidth;
     private long mEditedVideoHeight;
-    private IVideoInfoListener mEditedVideoInfoListener;
-
-    public void setmEditedVideoInfoListener(IVideoInfoListener mEditedVideoInfoListener) {
-        this.mEditedVideoInfoListener = mEditedVideoInfoListener;
-    }
 
     public long getmEditedVideoWidth() {
         return mEditedVideoWidth;
@@ -447,7 +442,6 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
             mFileSize = mediaInfo.getSize();
 
             updateEditedVideoInfo(width, height);
-            mEditedVideoInfoListener.onInfo(width, height);
         }
     }
 

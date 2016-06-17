@@ -5,9 +5,10 @@ import android.media.MediaCodecInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,7 +26,7 @@ import org.m4m.domain.Pair;
 import java.io.IOException;
 
 
-public class EditVideoActivity extends AppCompatActivity implements View.OnClickListener, EditVideoFragment.IVideoInfoListener {
+public class EditVideoActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String INPUT_MEDIA_PATH = "input_media_path";
 
@@ -37,14 +38,14 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     private EditVideoFragment mEditVideoFragment;
     private String mSelectedVideoUriPath;
 
-    public static final int TRIMMED_VIDEO_DEFAULT_WIDTH = 640;
-    public static final int TRIMMED_VIDEO_DEFAULT_HEIGHT = 480;
+    public static final int TRIMMED_VIDEO_DEFAULT_WIDTH = 1920;
+    public static final int TRIMMED_VIDEO_DEFAULT_HEIGHT = 1280;
 
     protected int mVideoWidthOut = TRIMMED_VIDEO_DEFAULT_WIDTH;
     protected int mVideoHeightOut = TRIMMED_VIDEO_DEFAULT_HEIGHT;
 
-    protected int mVideoWidthIn = TRIMMED_VIDEO_DEFAULT_WIDTH;
-    protected int mVideoHeightIn = TRIMMED_VIDEO_DEFAULT_HEIGHT;
+    protected int mVideoWidthIn = 0;
+    protected int mVideoHeightIn = 0;
 
     protected static final String videoMimeType = "video/avc";
     protected static int VIDEO_BIT_RATE_IN_KB_BYTES = 5000;
@@ -76,19 +77,17 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_edit_video);
 
         mEditVideoFragment = (EditVideoFragment) getSupportFragmentManager().findFragmentById(R.id.edit_video_panel);
-        mEditVideoFragment.setmEditedVideoInfoListener(this);
 
-        RelativeLayout mXTVToolBar = (RelativeLayout) findViewById(R.id.xtv_tool_bar);
+        Toolbar mXTVToolBar = (Toolbar) findViewById(R.id.xtv_tool_bar);
+        setSupportActionBar(mXTVToolBar);
 
         final TextView title = (TextView) mXTVToolBar.findViewById(R.id.title);
         title.setText(SCREEN.EDIT_VIDEO.getScreenName());
 
-        final TextView next = (TextView) mXTVToolBar.findViewById(R.id.edit_video_finish);
-        next.setVisibility(View.VISIBLE);
+        final ImageView next = (ImageView) mXTVToolBar.findViewById(R.id.edit_video_finish);
         next.setOnClickListener(this);
 
-        final TextView close = (TextView) mXTVToolBar.findViewById(R.id.edit_video_cancel);
-        close.setVisibility(View.VISIBLE);
+        final ImageView close = (ImageView) mXTVToolBar.findViewById(R.id.edit_video_cancel);
         close.setOnClickListener(this);
 
         mSelectedVideoPath = getIntent().getStringExtra(INPUT_MEDIA_PATH);
@@ -137,12 +136,6 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
         videoAudioVideoEncoderAsyncTask.execute();
     }
 
-    @Override
-    public void onInfo(long width, long height) {
-        mVideoWidthOut = (int) width;
-        mVideoHeightOut = (int) height;
-        Log.i(TAG, "onInfo() ,mVideoWidthOut:" + mVideoWidthOut + ",mVideoHeightOut:" + mVideoHeightOut);
-    }
 
     private class VideoTrimmingAsyncTask extends AsyncTask<Void, Void, Void> {
 
@@ -217,7 +210,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.i(TAG, "onMediaDone(),mSegmentStartFrom:" + mSegmentStartFrom + ",mSegmentEndTo:" + mSegmentEndTo + "," + mSrcMediaName1 + ",mSrcMediaName1" +
+                        Log.i(TAG, "SHAIL...onMediaDone(),mSegmentStartFrom:" + mSegmentStartFrom + ",mSegmentEndTo:" + mSegmentEndTo + "," + mSrcMediaName1 + ",mSrcMediaName1" +
                                 ",mDstMediaPath:" + mDstMediaPath + ",mMediaUri1:" + mMediaUri1 + ",mVideoWidthOut:" + mVideoWidthOut + ",mVideoHeightOut:" + mVideoHeightOut);
                         Toast.makeText(EditVideoActivity.this, "Success", Toast.LENGTH_SHORT).show();
                         mProgressDialog.dismiss();
@@ -280,7 +273,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
             } else {
                 mVideoWidthIn = mVideoFormat.getVideoFrameSize().width();
                 mVideoHeightIn = mVideoFormat.getVideoFrameSize().height();
-                Log.i(TAG, "getFileInfo() mVideoWidthIn:" + mVideoWidthIn + ",mVideoHeightIn:" + mVideoHeightIn);
+                Log.i(TAG, "SHAIL...getFileInfo() mVideoWidthIn:" + mVideoWidthIn + ",mVideoHeightIn:" + mVideoHeightIn);
             }
         } catch (Exception e) {
             String message = (e.getMessage() != null) ? e.getMessage() : e.toString();
@@ -314,6 +307,8 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
         MediaFile mediaFile = mMediaComposer.getSourceFiles().get(0);
         mSegmentStartFrom = mEditVideoFragment.getTrimmedVideoStartTime() * 1000;//1000;
         mSegmentEndTo = mEditVideoFragment.getTrimmedVideoEndTime() * 1000;//2000;
+
+        Log.i(TAG,"updateSegments() called,mSegmentStartFrom:"+mSegmentStartFrom+",mSegmentEndTo"+mSegmentEndTo);
 
         mediaFile.addSegment(new Pair<Long, Long>(mSegmentStartFrom, mSegmentEndTo));
     }

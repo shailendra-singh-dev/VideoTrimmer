@@ -44,14 +44,12 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
     private static final String VIDEO_DURATION = "video_duration";
     private static final String TRIMMED_VIDEO_DURATION = "trimmed_video_duration";
 
-    public interface IVideoInfoListener {
-        void onInfo(long width, long height);
-    }
-
     private static final String TAG = EditVideoFragment.class.getSimpleName();
     final private StateObserver mVideoStateObserver = new StateObserver();
 
-    private static final int PROGRESS_DIFFERENCE = 1 * 1000;
+    private static final int PROGRESS_MIN_DIFFERENCE = 1 * 1000;
+    private static final int PROGRESS_MAX_DIFFERENCE = 3 * 1000;
+
     private EditVideoActivity mEditVideoActivity = null;
 
     private PlaybackSeekBar mPlaybackSeekBar = null;
@@ -73,16 +71,12 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
     private long mTrimmedVideoLength;
 
     private long mFileSize;
-    private long mEditedVideoWidth;
-    private long mEditedVideoHeight;
 
-    public long getmEditedVideoWidth() {
-        return mEditedVideoWidth;
-    }
+    protected int mVideoWidthIn = 0;
+    protected int mVideoHeightIn = 0;
 
-    public long getmEditedVideoHeight() {
-        return mEditedVideoHeight;
-    }
+    protected int mVideoWidthOut = 0;
+    protected int mVideoHeightOut = 0;
 
     private long mWrongVideoDuration;
     private long mCorrectVideoDuration;
@@ -126,27 +120,27 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         mPlaybackSeekBar.setIPlaybackOnSeekBarChangeListener(this);
 
         mXTVFramesSeekBar = (XTVFramesSeekBar) editVideoView.findViewById(R.id.video_slice_seekbar);
-
-        if(null != savedInstanceState){
-            mCurrentPosition = savedInstanceState.getLong(PLAYBACK_SEEKBAR_CURRENT_POSITION);
-            mVideoDuration = savedInstanceState.getLong(VIDEO_DURATION);
-
-            mLeftPosition = savedInstanceState.getLong(FRAMES_SEEKBAR_LEFT_POSITION);
-            mRightPosition =  savedInstanceState.getLong(FRAMES_SEEKBAR_RIGHT_POSITION);
-            Log.i(TAG, "onCreateView(),mCurrentPosition:"+mCurrentPosition+",mVideoDuration:"+mVideoDuration+",mLeftPosition:"+mLeftPosition+",mRightPosition:"+mRightPosition);
-        }
-
-        mPlaybackSeekBar.setMax((int) mVideoDuration);
-        mPlaybackSeekBar.setProgress((int) mCurrentPosition);
-
-        mXTVFramesSeekBar.setLeftProgress((int) mLeftPosition);
-        mXTVFramesSeekBar.setRightProgress((int) mRightPosition);
+//        if(null != savedInstanceState){
+//            mCurrentPosition = savedInstanceState.getLong(PLAYBACK_SEEKBAR_CURRENT_POSITION);
+//            mVideoDuration = savedInstanceState.getLong(VIDEO_DURATION);
+//
+//            mLeftPosition = savedInstanceState.getLong(FRAMES_SEEKBAR_LEFT_POSITION);
+//            mRightPosition =  savedInstanceState.getLong(FRAMES_SEEKBAR_RIGHT_POSITION);
+//            Log.i(TAG, "SHAIL onCreateView(),mCurrentPosition:"+mCurrentPosition+",mVideoDuration:"+mVideoDuration+",mLeftPosition:"+mLeftPosition+",mRightPosition:"+mRightPosition);
+//        }
+//
+//        mPlaybackSeekBar.setMax((int) mVideoDuration);
+//        mPlaybackSeekBar.setProgress((int) mCurrentPosition);
+//
+//        mXTVFramesSeekBar.setLeftProgress((int) mLeftPosition);
+//        mXTVFramesSeekBar.setRightProgress((int) mRightPosition);
+//
 
         final LinearLayout playbackVideoInfo = (LinearLayout) editVideoView.findViewById(R.id.playback_video_info);
         mOriginalVideoInfoView = (TextView) playbackVideoInfo.findViewById(R.id.original_video_info);
         mEditedVideoInfoView = (TextView) playbackVideoInfo.findViewById(R.id.edited_video_info);
 
-        updateEditedVideoInfo(mEditedVideoWidth, mEditedVideoHeight);
+        updateEditedVideoInfo(mVideoWidthIn, mVideoHeightIn,mVideoWidthOut, mVideoHeightOut);
 
         return editVideoView;
     }
@@ -235,10 +229,13 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
     }
 
     private void updateVideoSliceSeekBar(final int duration) {
+        Log.i(TAG, "SHAIL updateVideoSliceSeekBar()duration:"+duration);
         mXTVFramesSeekBar.setMaxValue(duration);
         mXTVFramesSeekBar.setLeftProgress(0);
-        mXTVFramesSeekBar.setRightProgress(duration);
-        mXTVFramesSeekBar.setProgressMinDiff(PROGRESS_DIFFERENCE);
+        mXTVFramesSeekBar.setRightProgress(PROGRESS_MAX_DIFFERENCE);
+        mXTVFramesSeekBar.setProgressMinDiff(PROGRESS_MIN_DIFFERENCE);
+        mXTVFramesSeekBar.setProgressMaxDiff(PROGRESS_MAX_DIFFERENCE);
+        mXTVFramesSeekBar.invalidateView(mEditVideoActivity);
     }
 
     @Override
@@ -412,8 +409,6 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         mLeftPosition = 0;
         mVideoDuration = 0;
         mFileSize = 0;
-        mEditedVideoWidth = 0;
-        mEditedVideoHeight = 0;
     }
 
     @Override
@@ -436,12 +431,12 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         protected void onPostExecute(MediaInfo mediaInfo) {
             mVideoDuration = mediaInfo.getDuration();
             long width = mediaInfo.getWidth();
-            mEditedVideoWidth = width;
+            mVideoWidthOut = (int) width;
             long height = mediaInfo.getHeight();
-            mEditedVideoHeight = height;
+            mVideoHeightOut = (int) height;
             mFileSize = mediaInfo.getSize();
 
-            updateEditedVideoInfo(width, height);
+            updateEditedVideoInfo(width, height, mVideoWidthOut, mVideoHeightOut);
         }
     }
 
@@ -449,13 +444,13 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         return mTrimmedVideoLength;
     }
 
-    private void updateEditedVideoInfo(long width, long height) {
+    private void updateEditedVideoInfo(long originalVideoWidth, long originalVideoHeight,long editedVideoWidth, long editedVideoHeight) {
         final String hoursMinutesStr = AppUtils.convertMsToHMSFormat(mVideoDuration);
         final String fileSizeStr = AppUtils.readableFileSize(mFileSize);
-        String originalVideoInfo = String.format(getResources().getString(R.string.original_video_info), "" + width, "" + height, hoursMinutesStr, "" + fileSizeStr);
+        String originalVideoInfo = String.format(getResources().getString(R.string.original_video_info), "" + originalVideoWidth, "" + originalVideoHeight, hoursMinutesStr, "" + fileSizeStr);
         mOriginalVideoInfoView.setText(originalVideoInfo);
 
-        String editedVideoInfo = String.format(getResources().getString(R.string.edited_video_info), "" + mEditedVideoWidth, "" + mEditedVideoHeight, hoursMinutesStr, "" + fileSizeStr);
+        String editedVideoInfo = String.format(getResources().getString(R.string.edited_video_info), "" + editedVideoWidth, "" + editedVideoHeight, hoursMinutesStr, "" + fileSizeStr);
         mEditedVideoInfoView.setText(editedVideoInfo);
 
         updateEditedVideoDuration(false, mTrimmedVideoLength);
@@ -486,7 +481,7 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         final String fileSizeStr = AppUtils.readableFileSize(trimmedVideoSize);
         final String hoursMinutes = AppUtils.convertMsToHMSFormat(trimmedVideoLength);
 
-        String editedVideoInfo = String.format(getResources().getString(R.string.edited_video_info), "" + mEditedVideoWidth, "" + mEditedVideoHeight, hoursMinutes, "" + fileSizeStr);
+        String editedVideoInfo = String.format(getResources().getString(R.string.edited_video_info), "" + mVideoWidthOut, "" + mVideoHeightOut, hoursMinutes, "" + fileSizeStr);
         mEditedVideoInfoView.setText(editedVideoInfo);
     }
 
@@ -527,7 +522,22 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         outState.putLong(FRAMES_SEEKBAR_LEFT_POSITION, mLeftPosition);
         outState.putLong(FRAMES_SEEKBAR_RIGHT_POSITION, mRightPosition);
         outState.putLong(TRIMMED_VIDEO_DURATION, mTrimmedVideoLength);
-        Log.i(TAG, "onSaveInstanceState(),mCurrentPosition:"+mCurrentPosition+",mVideoDuration:"+mVideoDuration+",mLeftPosition:"+mLeftPosition+",mRightPosition:"+mRightPosition);
+        Log.i(TAG, "onSaveInstanceState(),mCurrentPosition:" + mCurrentPosition + ",mVideoDuration:" + mVideoDuration + ",mLeftPosition:" + mLeftPosition + ",mRightPosition:" + mRightPosition);
     }
 
+    public void setVideoHeightIn(int videoHeightIn) {
+        mVideoHeightIn = videoHeightIn;
+    }
+
+    public void setVideoWidthIn(int videoWidthIn) {
+        mVideoWidthIn = videoWidthIn;
+    }
+
+    public void setVideoWidthOut(int videoWidthOut) {
+        mVideoWidthOut = videoWidthOut;
+    }
+
+    public void setVideoHeightOut(int videoHeightOut) {
+        mVideoHeightOut = videoHeightOut;
+    }
 }

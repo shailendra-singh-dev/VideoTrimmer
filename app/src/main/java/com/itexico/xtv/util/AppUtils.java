@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.CamcorderProfile;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -277,4 +278,51 @@ public class AppUtils {
             }
         }
     }
+
+    public static int[] getVideoQualityResolution(int videoQuality){
+        int[] resolution = new int[2];
+        switch (videoQuality) {
+            case 0:
+                resolution[0] = 640;
+                resolution[1] = 480;
+                break;
+
+            case 1:
+                resolution[0] = 1280;
+                resolution[1] = 720;
+                break;
+
+            case 2:
+                resolution[0] = 1920;
+                resolution[1] = 1080;
+                break;
+
+            default:
+                break;
+        }
+        return resolution;
+    }
+
+    public static int getCameraStandardVideoQuality(int videoQuality){
+        int cameraVideoQuality = 0;
+        switch (videoQuality) {
+            case 0:
+                cameraVideoQuality = CamcorderProfile.QUALITY_480P;
+                break;
+
+            case 1:
+                cameraVideoQuality = CamcorderProfile.QUALITY_720P;
+                break;
+
+            case 2:
+                cameraVideoQuality = CamcorderProfile.QUALITY_1080P;
+                break;
+
+            default:
+                break;
+        }
+        return cameraVideoQuality;
+    }
+
+
 }

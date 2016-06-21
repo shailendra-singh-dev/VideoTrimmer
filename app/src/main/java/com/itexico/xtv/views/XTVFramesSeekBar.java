@@ -41,25 +41,28 @@ public class XTVFramesSeekBar extends ImageView {
     final private Rect mSlidersDrawRect = new Rect();
     final private Paint mFillPaint = new Paint();
 
-    private int mProgressMinDiff = 15; //percentage
+    private int mProgressMinDiffMS = 15; //percentage
+    private int mProgressMaxDiffMS = 15; //percentage
+
     private int progressColor = getResources().getColor(R.color.blue);
     private int secondaryProgressColor = getResources().getColor(R.color.blue_light);
     private int mProgressHalfHeight = 3;
-    private int thumbPadding = getResources().getDimensionPixelOffset(R.dimen.frames_default_margin);
-    private int maxValue = 100;
+    private int mMaxValueInMS = 100;
 
-    private int mProgressMinDiffPixels;
-    private int mThumbSliceLeftX;
-    private int mThumbSliceRightX;
-    private int mThumbCurrentVideoPositionX;
-    private int mThumbSliceLeftValue;
-    private int mThumbSliceRightValue;
+    private float mProgressMinDiffPixels;
+    private float mProgressMaxDiffPixels;
+
+    private float mThumbSliceLeftX;
+    private float mThumbSliceRightX;
+
+    private float mThumbCurrentVideoPositionX;
+    private int mThumbSliceLeftValueMS;
+    private int mThumbSliceRightValueMS;
     private int mThumbSliceY;
     private int mThumbCurrentVideoPositionY;
 
     private int mSelectedThumb;
     private int mThumbSliceHalfWidth;
-    private int mThumbCurrentVideoPositionHalfWidth;
     private SeekBarChangeListener mSeekBarChangeListener;
 
     private int mProgressTop;
@@ -76,6 +79,11 @@ public class XTVFramesSeekBar extends ImageView {
 
     private RectF mRectF = null;
     private ArrayList<Bitmap> mFramesList = null;
+    private int mLeftProgressMS;
+    private int mRightProgressMS;
+    private float mTotalWidth;
+    private float actionDownX;
+    private float actionMoveX;
 
     public XTVFramesSeekBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -98,7 +106,12 @@ public class XTVFramesSeekBar extends ImageView {
         init(getContext());
     }
 
+    public void invalidateView(Context context){
+        init(context);
+    }
+
     private void init(Context context) {
+        mTotalWidth = getWidth();
         mFramesList = new ArrayList<Bitmap>();
         mContext = context;
         mFillPaint.setColor(Color.LTGRAY);
@@ -118,25 +131,24 @@ public class XTVFramesSeekBar extends ImageView {
             getLayoutParams().height = mThumbSliceLeft.getHeight();
 
         mThumbSliceY = getThumbSliceY();
-        Log.i(TAG, "init() mSlidersDrawRect: mThumbSliceY" + mThumbSliceY);
         if (null != mThumbCurrentVideoPosition) {
             mThumbCurrentVideoPositionY = (getHeight()) - (mThumbCurrentVideoPosition.getHeight());
         }
         if (null != mThumbSliceLeft) {
             mThumbSliceHalfWidth = mThumbSliceLeft.getWidth() / 2;
         }
-        if (null != mThumbCurrentVideoPosition) {
-            mThumbCurrentVideoPositionHalfWidth = mThumbCurrentVideoPosition.getWidth() / 2;
-        }
-        if (mThumbSliceLeftX == 0 || mThumbSliceRightX == 0) {
-            mThumbSliceLeftX = thumbPadding;
-            mThumbSliceRightX = getWidth() - thumbPadding;
-        }
-        mProgressMinDiffPixels = calculateCorrds(mProgressMinDiff) - 2 * thumbPadding;
+
+        mProgressMinDiffPixels = calculateCorrds(mProgressMinDiffMS);
+        mProgressMaxDiffPixels = calculateCorrds(mProgressMaxDiffMS);
         if (null != mThumbSliceLeft) {
             mProgressTop = getHeight() - mThumbSliceLeft.getHeight() / 2;
         }
         mProgressBottom = mProgressTop + mProgressHalfHeight;
+
+        calculateLeftProgressCoOrdinates();
+        calculateRightProgressCoOrdinates();
+
+        Log.i(TAG, "SHAIL init() ,mThumbSliceLeftX:" + mThumbSliceLeftX + ",mThumbSliceRightX:" + mThumbSliceRightX + ",mTotalWidth:" + mTotalWidth);
         invalidate();
     }
 
@@ -156,14 +168,14 @@ public class XTVFramesSeekBar extends ImageView {
         Rect rect;
         //generate and draw progress
         mProgressDrawPaint.setColor(progressColor);
-        rect = new Rect(thumbPadding, mProgressTop, mThumbSliceLeftX, mProgressBottom);
+        rect = new Rect(0, mProgressTop,(int)mThumbSliceLeftX, mProgressBottom);
         canvas.drawRect(rect, mProgressDrawPaint);
-        rect = new Rect(mThumbSliceRightX, mProgressTop, getWidth() - thumbPadding, mProgressBottom);
+        rect = new Rect((int)mThumbSliceRightX, mProgressTop,(int) mTotalWidth, mProgressBottom);
         canvas.drawRect(rect, mProgressDrawPaint);
 
         //generate and draw secondary progress
         mProgressDrawPaint.setColor(secondaryProgressColor);
-        rect = new Rect(mThumbSliceLeftX, mProgressTop, mThumbSliceRightX, mProgressBottom);
+        rect = new Rect((int)mThumbSliceLeftX, mProgressTop, (int)mThumbSliceRightX, mProgressBottom);
         canvas.drawRect(rect, mProgressDrawPaint);
 
         final int thumbSliceWidth = getResources().getDimensionPixelOffset(R.dimen.rounded_rectangle_width);
@@ -174,11 +186,11 @@ public class XTVFramesSeekBar extends ImageView {
             mSlidersDrawRect.bottom = thumbSliceHeight;
 
             if (null != mThumbSliceLeft) {
-                Log.i(TAG, "drawThumbs() mSlidersDrawRect: mThumbSliceY" + mThumbSliceY);
+                Log.i(TAG, "TEST drawThumbs() mThumbSliceLeftX:" + mThumbSliceLeftX);
                 canvas.drawBitmap(mThumbSliceLeft, mThumbSliceLeftX, mThumbSliceY, mThumbPaint);
             }
             if (null != mThumbSliceRight) {
-                Log.i(TAG, "drawThumbs() mSlidersDrawRect: mThumbSliceY" + mThumbSliceY);
+                Log.i(TAG, "TEST drawThumbs() mThumbSliceRightX:" + mThumbSliceRightX);
                 canvas.drawBitmap(mThumbSliceRight, mThumbSliceRightX - thumbSliceWidth, mThumbSliceY, mThumbPaint);
             }
         }
@@ -307,6 +319,8 @@ public class XTVFramesSeekBar extends ImageView {
             int actionId = -1;
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    actionDownX = event.getX();
+                    Log.i(TAG,"SHAIL onTouchEvent actionDownX:"+actionDownX);
                     actionId = MotionEvent.ACTION_DOWN;
                     if (mx >= mThumbSliceLeftX - mThumbSliceHalfWidth
                             && mx <= mThumbSliceLeftX + mThumbSliceHalfWidth || mx < mThumbSliceLeftX - mThumbSliceHalfWidth) {
@@ -322,21 +336,53 @@ public class XTVFramesSeekBar extends ImageView {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     actionId = MotionEvent.ACTION_MOVE;
-                    if ((mx <= mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_RIGHT) ||
+                    ///changes for min ,max starts
+                    //                    boolean isRightMinLimitReached =(mx <= mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_RIGHT);
+//                    boolean isLeftMinLimitReached =(mx >= mThumbSliceRightX - mThumbSliceHalfWidth - mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_LEFT);
+//
+//                    boolean isRightMaxLimitReached =(mx <= mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMaxDiffPixels && mSelectedThumb == SELECT_THUMB_RIGHT);
+//                    boolean isLeftMaxLimitReached =(mx >= mThumbSliceRightX - mThumbSliceHalfWidth - mProgressMaxDiffPixels && mSelectedThumb == SELECT_THUMB_LEFT);
+//
+//                    if (isLeftMinLimitReached|| isRightMinLimitReached || isRightMaxLimitReached || isLeftMaxLimitReached) {
+//                        mSelectedThumb = SELECT_THUMB_NON;
+//                    }
+
+                    //Movement when selected Video duration is more then limit time..
+                    actionMoveX = event.getX();
+                    int timeDifference = mThumbSliceRightValueMS - mThumbSliceLeftValueMS;
+                    float distanceMoved = actionMoveX- actionDownX;
+
+                    Log.i(TAG,"TEST onTouchEvent timeDifference:"+timeDifference+",mProgressMaxDiffMS:"+mProgressMaxDiffMS);
+                    if(timeDifference >= mProgressMaxDiffMS ){
+                        if(mSelectedThumb == SELECT_THUMB_RIGHT){
+                            mThumbSliceRightX = mx;
+                            mThumbSliceLeftX =  distanceMoved;
+                            Log.i(TAG,"TEST onTouchEvent timeDifference:mSelectedThumb == SELECT_THUMB_RIGHT,mThumbSliceRightX:"+mThumbSliceRightX+",mThumbSliceLeftX:"+mThumbSliceLeftX);
+                        }else if(mSelectedThumb == SELECT_THUMB_LEFT){
+                            mThumbSliceLeftX = mx;
+                            mThumbSliceRightX = mThumbSliceLeftX + mProgressMaxDiffPixels;
+                            Log.i(TAG,"TEST onTouchEvent timeDifference:mSelectedThumb == SELECT_THUMB_LEFT,mThumbSliceLeftX:"+mThumbSliceLeftX+",mThumbSliceRightX:"+mThumbSliceRightX);
+                        }
+                    }
+                    ///Movement when MIN is reached..
+                    else if ((mx <= mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_RIGHT) ||
                             (mx >= mThumbSliceRightX - mThumbSliceHalfWidth - mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_LEFT)) {
                         mSelectedThumb = SELECT_THUMB_NON;
+                        Log.i(TAG,"TEST onTouchEvent MIN Difference reached..");
                     }
-
-                    if (mSelectedThumb == SELECT_THUMB_LEFT) {
+                    //Movement without any Condition...
+                    else if (mSelectedThumb == SELECT_THUMB_LEFT) {
                         mThumbSliceLeftX = mx;
+                        Log.i(TAG,"TEST onTouchEvent mSelectedThumb == SELECT_THUMB_LEFT:");
                     } else if (mSelectedThumb == SELECT_THUMB_RIGHT) {
                         mThumbSliceRightX = mx;
+                        Log.i(TAG,"TEST onTouchEvent mSelectedThumb == SELECT_THUMB_RIGHT:");
                     }
                     break;
                 case MotionEvent.ACTION_UP:
                     actionId = MotionEvent.ACTION_UP;
                     mSelectedThumb = SELECT_THUMB_NON;
-                    mSeekBarChangeListener.onCurrentFrameUpdated(mThumbSliceLeftValue);
+                    mSeekBarChangeListener.onCurrentFrameUpdated(mThumbSliceLeftValueMS);
 
                     break;
             }
@@ -347,58 +393,71 @@ public class XTVFramesSeekBar extends ImageView {
     }
 
     private void notifySeekBarValueChanged(int actionId, int selectedThumb) {
-        if (mThumbSliceLeftX < thumbPadding)
-            mThumbSliceLeftX = thumbPadding;
+        if (mThumbSliceLeftX < 0)
+            mThumbSliceLeftX = 0;
 
-        if (mThumbSliceRightX < thumbPadding)
-            mThumbSliceRightX = thumbPadding;
+        if (mThumbSliceRightX < 0)
+            mThumbSliceRightX = 0;
 
-        if (mThumbSliceLeftX > getWidth() - thumbPadding)
-            mThumbSliceLeftX = getWidth() - thumbPadding;
+        if (mThumbSliceLeftX > mTotalWidth)
+            mThumbSliceLeftX = mTotalWidth;
 
-        if (mThumbSliceRightX > getWidth() - thumbPadding)
-            mThumbSliceRightX = getWidth() - thumbPadding;
+        if (mThumbSliceRightX > mTotalWidth)
+            mThumbSliceRightX = mTotalWidth;
 
         invalidate();
         if (mSeekBarChangeListener != null) {
             calculateThumbValue();
-            mSeekBarChangeListener.SeekBarValueChanged(actionId, selectedThumb, mThumbSliceLeftValue, mThumbSliceRightValue);
+            mSeekBarChangeListener.SeekBarValueChanged(actionId, selectedThumb, mThumbSliceLeftValueMS, mThumbSliceRightValueMS);
         }
     }
 
     private void calculateThumbValue() {
-        mThumbSliceLeftValue = (maxValue * (mThumbSliceLeftX - thumbPadding)) / (getWidth() - 2 * thumbPadding);
-        mThumbSliceRightValue = (maxValue * (mThumbSliceRightX - thumbPadding)) / (getWidth() - 2 * thumbPadding);
+        mThumbSliceLeftValueMS =(int) ((mThumbSliceLeftX * mMaxValueInMS) / mTotalWidth);
+        mThumbSliceRightValueMS =(int) ((mThumbSliceRightX * mMaxValueInMS) / mTotalWidth);
+        Log.i(TAG,"TEST calculateThumbValue(),mThumbSliceLeftValueMS:"+mThumbSliceLeftValueMS+",mThumbSliceRightValueMS:"+mThumbSliceRightValueMS);
     }
 
-    private int calculateCorrds(int progress) {
-        return (int) (((getWidth() - 2d * thumbPadding) / maxValue) * progress) + thumbPadding;
+    private float calculateCorrds(int timeInMilliSeconds) {
+        double coordinatesValue =(timeInMilliSeconds * mTotalWidth) / mMaxValueInMS;;
+        Log.i(TAG,"SHAIL calculateCorrds(),timeInMilliSeconds:"+timeInMilliSeconds+",coordinatesValue:"+coordinatesValue);
+        return (float) coordinatesValue;
     }
 
-    public void setLeftProgress(int progress) {
-        if (progress < mThumbSliceRightValue - mProgressMinDiff) {
-            mThumbSliceLeftX = calculateCorrds(progress);
+    private void calculateLeftProgressCoOrdinates(){
+        if (mLeftProgressMS < mThumbSliceRightValueMS - mProgressMinDiffMS) {
+            mThumbSliceLeftX = calculateCorrds(mLeftProgressMS);
         }
         notifySeekBarValueChanged(-1, mSelectedThumb);
     }
 
-    public void setRightProgress(int progress) {
-        if (progress > mThumbSliceLeftValue + mProgressMinDiff) {
-            mThumbSliceRightX = calculateCorrds(progress);
+    private void calculateRightProgressCoOrdinates(){
+        if (mRightProgressMS > mThumbSliceLeftValueMS + mProgressMinDiffMS) {
+            mThumbSliceRightX = calculateCorrds(mRightProgressMS);
         }
         notifySeekBarValueChanged(-1, mSelectedThumb);
+    }
+
+    public void setLeftProgress(int timeInMS) {
+        mLeftProgressMS = timeInMS;
+        Log.i(TAG, "SHAIL setLeftProgress(),mLeftProgressMS:" + mLeftProgressMS);
+    }
+
+    public void setRightProgress(int timeInMS) {
+        mRightProgressMS = timeInMS;
+        Log.i(TAG, "SHAIL setRightProgress(),mRightProgressMS:" + mRightProgressMS);
     }
 
     public int getLeftProgress() {
-        return mThumbSliceLeftValue;
+        return mThumbSliceLeftValueMS;
     }
 
     public int getRightProgress() {
-        return mThumbSliceRightValue;
+        return mThumbSliceRightValueMS;
     }
 
-    public void resetProgress(int leftProgress, int rightProgress) {
-        if (rightProgress - leftProgress > mProgressMinDiff) {
+    public void setProgress(int leftProgress, int rightProgress) {
+        if (rightProgress - leftProgress > mProgressMinDiffMS) {
             mThumbSliceLeftX = calculateCorrds(leftProgress);
             mThumbSliceRightX = calculateCorrds(rightProgress);
         }
@@ -423,14 +482,18 @@ public class XTVFramesSeekBar extends ImageView {
     }
 
     public void setMaxValue(int maxValue) {
-        this.maxValue = maxValue;
+        mMaxValueInMS = maxValue;
     }
 
-    public void setProgressMinDiff(int mProgressMinDiff) {
-        this.mProgressMinDiff = mProgressMinDiff;
-        mProgressMinDiffPixels = calculateCorrds(mProgressMinDiff);
+    public void setProgressMinDiff(int progressMinDiff) {
+        mProgressMinDiffMS = progressMinDiff;
+        mProgressMinDiffPixels = calculateCorrds(progressMinDiff);
     }
 
+    public void setProgressMaxDiff(int progressMaxDiff) {
+        mProgressMaxDiffMS = progressMaxDiff;
+        mProgressMaxDiffPixels = calculateCorrds(progressMaxDiff);
+    }
 
     public interface SeekBarChangeListener {
         void SeekBarValueChanged(int actionId, int selectedThumb, int leftThumb, int rightThumb);
@@ -456,26 +519,6 @@ public class XTVFramesSeekBar extends ImageView {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         cleanUpResources();
-    }
-
-    public void setProgressHeight(int progressHeight) {
-        this.mProgressHalfHeight = mProgressHalfHeight / 2;
-        invalidate();
-    }
-
-    public void setProgressColor(int progressColor) {
-        this.progressColor = progressColor;
-        invalidate();
-    }
-
-    public void setSecondaryProgressColor(int secondaryProgressColor) {
-        this.secondaryProgressColor = secondaryProgressColor;
-        invalidate();
-    }
-
-    public void setThumbPadding(int thumbPadding) {
-        this.thumbPadding = thumbPadding;
-        invalidate();
     }
 
     public void cleanUpResources() {

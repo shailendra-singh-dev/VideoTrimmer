@@ -20,6 +20,9 @@ import com.itexico.xtv.util.AppUtils;
 
 public class SelectVideoActivity extends AppCompatActivity {
 
+    public static final int TRIMMED_VIDEO_DEFAULT_WIDTH = 640;
+    public static final int TRIMMED_VIDEO_DEFAULT_HEIGHT = 480;
+
     private static final String TAG = SelectVideoActivity.class.getSimpleName();
     private static final int REQUEST_TAKE_GALLERY_VIDEO = 1000;
     private static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 10;
@@ -128,7 +131,10 @@ public class SelectVideoActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, EditVideoActivity.class);
                 intent.putExtra(EditVideoActivity.INPUT_MEDIA_PATH, selectedVideoPath);
 
-                intent.putExtra(EditVideoActivity.INPUT_MEDIA_URI_PATH, selectedVideoUri.toString());
+//                intent.putExtra(EditVideoActivity.INPUT_MEDIA_URI_PATH, selectedVideoUri.toString());
+//
+//                intent.putExtra(EditVideoActivity.OUPUT_VIDEO_WIDTH,TRIMMED_VIDEO_DEFAULT_WIDTH);
+//                intent.putExtra(EditVideoActivity.OUPUT_VIDEO_HEIGHT,TRIMMED_VIDEO_DEFAULT_HEIGHT);
 
                 startActivity(intent);
             }

@@ -43,6 +43,8 @@ import java.util.Locale;
 @SuppressWarnings("deprecation")
 public class CameraRecordingActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
+    public static final int VIDEO_QUALITY_1080P_SIZE = 1920 * 1080;
+
     private final String TAG = CameraRecordingActivity.class.getSimpleName();
 
     private Camera myCamera;
@@ -67,7 +69,7 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
     private AnimatedCircleImageView mAnimatedCircleImageView;
     private String mRecordedVideoLocation;
     private CountDownTimer mCountDownTimer = null;
-
+    private int mAllowedTrimmedVideoQaulity =1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -211,10 +213,6 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
 
     public void obtainParameters() {
         List<Camera.Size> sizes = parameters.getSupportedPreviewSizes();
-        List<Camera.Size> supportedVideoSizes = parameters.getSupportedVideoSizes();
-        for(final Camera.Size supportedVideo:supportedVideoSizes){
-            Log.i(TAG,"supportedVideoSize:"+supportedVideo.width +",x"+supportedVideo.height);
-        }
 
         Camera.Size optimalSize = getOptimalPreviewSize(sizes, CameraRecordingActivity.this.getResources().getDisplayMetrics().widthPixels, CameraRecordingActivity.this.getResources().getDisplayMetrics().heightPixels);
         parameters.setPreviewSize(optimalSize.width, optimalSize.height);
@@ -231,8 +229,10 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         mySurfaceHolder.removeCallback(this);
-        myCamera.stopPreview();
-        myCamera.release();
+        if(null != myCamera){
+            myCamera.stopPreview();
+            myCamera.release();
+        }
     }
 
     public static void setCameraDisplayOrientation(Activity activity, int cameraId, android.hardware.Camera camera) {
@@ -378,11 +378,13 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
         }
 
         // Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
+        int expectedVideoQulaity = AppUtils.getCameraStandardVideoQuality(mAllowedTrimmedVideoQaulity);
+        Log.i(TAG, "SHAIL mediaRecorder video expectedVideoQulaity:" + expectedVideoQulaity);
         if (cameraId > 0) {
-            mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
+            mediaRecorder.setProfile(CamcorderProfile.get(expectedVideoQulaity));
             mediaRecorder.setVideoFrameRate(15);
         } else {
-            mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+            mediaRecorder.setProfile(CamcorderProfile.get(expectedVideoQulaity));
         }
         if (duration > 0) {
             mediaRecorder.setMaxDuration(duration * AppConst.SEC_TO_MILLI_SEC_FACTOR);
@@ -496,4 +498,11 @@ public class CameraRecordingActivity extends AppCompatActivity implements Surfac
         startActivity(editVideoIntent);
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releaseCamera();
+        releaseMediaRecorder();
+    }
 }

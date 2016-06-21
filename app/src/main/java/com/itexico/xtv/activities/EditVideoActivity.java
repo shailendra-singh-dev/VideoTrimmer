@@ -41,8 +41,8 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     public static final int TRIMMED_VIDEO_DEFAULT_WIDTH = 1920;
     public static final int TRIMMED_VIDEO_DEFAULT_HEIGHT = 1280;
 
-    protected int mVideoWidthOut = TRIMMED_VIDEO_DEFAULT_WIDTH;
-    protected int mVideoHeightOut = TRIMMED_VIDEO_DEFAULT_HEIGHT;
+    protected int mVideoWidthOut = 0;//TRIMMED_VIDEO_DEFAULT_WIDTH;
+    protected int mVideoHeightOut = 0 ;//TRIMMED_VIDEO_DEFAULT_HEIGHT;
 
     protected int mVideoWidthIn = 0;
     protected int mVideoHeightIn = 0;
@@ -272,7 +272,9 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
                 Log.e(TAG, "Video format info unavailable");
             } else {
                 mVideoWidthIn = mVideoFormat.getVideoFrameSize().width();
+                mVideoWidthOut = mVideoWidthIn;
                 mVideoHeightIn = mVideoFormat.getVideoFrameSize().height();
+                mVideoHeightOut = mVideoHeightIn;
                 Log.i(TAG, "SHAIL...getFileInfo() mVideoWidthIn:" + mVideoWidthIn + ",mVideoHeightIn:" + mVideoHeightIn);
             }
         } catch (Exception e) {
@@ -280,12 +282,18 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
             Log.e(TAG, "Error while getting file Info " + message);
 
         }
+
+        mEditVideoFragment.setVideoWidthIn(mVideoWidthIn);
+        mEditVideoFragment.setVideoHeightIn(mVideoHeightIn);
+        mEditVideoFragment.setVideoWidthOut(mVideoWidthOut);
+        mEditVideoFragment.setVideoHeightOut(mVideoHeightOut);
+
     }
 
     protected void getActivityInputs() {
         mSrcMediaName1 = mSelectedVideoPath;
         mDstMediaPath = AppUtils.getTargetFileName(mSelectedVideoPath);
-        mMediaUri1 = new org.m4m.Uri(mSelectedVideoUriPath);
+        mMediaUri1 = new org.m4m.Uri(mSelectedVideoPath);
     }
 
     protected void transcode() throws Exception {

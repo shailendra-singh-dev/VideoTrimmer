@@ -214,7 +214,7 @@ public class AppUtils {
     public static int getNumberOfFramesToDraw(Context context) {
         final int totalWidth = getScreenWidth();
         final int frameWidth = context.getResources().getDimensionPixelSize(R.dimen.frames_thumbnail_width);
-        return totalWidth % frameWidth;
+        return totalWidth / frameWidth;
     }
 
     public static String getTimeForTrackFormat(int timeInMills, boolean display2DigitsInMinsSection) {

@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.itexico.xtv.R;
 import com.itexico.xtv.model.MediaInfo;
+import com.itexico.xtv.util.AppConst;
 import com.itexico.xtv.util.AppUtils;
 
 import java.io.File;
@@ -83,13 +84,16 @@ public class FramesRenderingManager {
     }
 
     public List<Bitmap> fetchAllVideoFrames(final Context context) {
+        int numberOfFramesToDraw = AppUtils.getNumberOfFramesToDraw(context);
         ArrayList<Bitmap> bitmapArrayList = new ArrayList<>();
         int frameWidth = context.getResources().getDimensionPixelSize(R.dimen.frames_thumbnail_width);
         int frameWidthCount = 0;
         final int totalWidth = AppUtils.getScreenWidth();
-        Log.i(TAG, "fetchAllVideoFrames totalWidth:" + totalWidth + ",frameWidth" + frameWidth);
-        long mDuration = mMediaInfo.getDuration();
-        for (int i = 1000000; i < mDuration * 1000; i += 1000000) {
+
+        long mDuration = mMediaInfo.getDuration()* AppConst.MS_TO_MACROSEC_FACTOR;
+        long eachFrameTimeStamp = mDuration/numberOfFramesToDraw;
+        Log.i(TAG, "fetchAllVideoFrames eachFrameTimeStamp:" + eachFrameTimeStamp + ",numberOfFramesToDraw" + numberOfFramesToDraw);
+        for (long i = eachFrameTimeStamp; i < mDuration; i += eachFrameTimeStamp) {
             if (frameWidthCount < totalWidth) {
                 Bitmap bitmap = mMediaMetadataRetriever.getFrameAtTime(i, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                 Log.i(TAG, "fetchAllVideoFrames bitmap:" + bitmap);

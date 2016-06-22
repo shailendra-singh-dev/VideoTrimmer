@@ -3,6 +3,8 @@ package com.itexico.xtv.util;
 
 public class AppConst {
 
+    public static final long MS_TO_MACROSEC_FACTOR = 1000;
+
     private AppConst() {
     }
 

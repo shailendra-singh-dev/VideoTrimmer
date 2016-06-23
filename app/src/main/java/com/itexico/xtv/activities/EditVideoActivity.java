@@ -280,14 +280,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
         } catch (Exception e) {
             String message = (e.getMessage() != null) ? e.getMessage() : e.toString();
             Log.e(TAG, "Error while getting file Info " + message);
-
         }
-
-        mEditVideoFragment.setVideoWidthIn(mVideoWidthIn);
-        mEditVideoFragment.setVideoHeightIn(mVideoHeightIn);
-        mEditVideoFragment.setVideoWidthOut(mVideoWidthOut);
-        mEditVideoFragment.setVideoHeightOut(mVideoHeightOut);
-
     }
 
     protected void getActivityInputs() {

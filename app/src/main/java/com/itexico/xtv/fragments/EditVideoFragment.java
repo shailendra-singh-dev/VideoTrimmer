@@ -1,7 +1,6 @@
 package com.itexico.xtv.fragments;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -31,8 +30,6 @@ import com.itexico.xtv.model.MediaInfo;
 import com.itexico.xtv.util.AppUtils;
 import com.itexico.xtv.views.PlaybackSeekBar;
 import com.itexico.xtv.views.XTVFramesSeekBar;
-
-import java.util.List;
 
 
 public class EditVideoFragment extends Fragment implements View.OnClickListener, MediaPlayer.OnPreparedListener,
@@ -490,17 +487,18 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         return mCorrectVideoDuration - mWrongVideoDuration;
     }
 
-    final public class VideoAllFramesAsyncTask extends AsyncTask<Void, Void, List<Bitmap>> {
+    final public class VideoAllFramesAsyncTask extends AsyncTask<Void, Void, Void> {
 
         @Override
-        protected List<Bitmap> doInBackground(Void... params) {
+        protected Void doInBackground(Void... params) {
             final FramesRenderingManager framesRenderingManager = FramesRenderingManager.getFramesRenderingManagerInstance();
-            return framesRenderingManager.fetchAllVideoFrames(mEditVideoActivity);
+            framesRenderingManager.fetchAllVideoFrames(mEditVideoActivity);
+            return null;
         }
 
         @Override
-        protected void onPostExecute(List<Bitmap> bitmaps) {
-            mXTVFramesSeekBar.updateFramesView(bitmaps);
+        protected void onPostExecute(Void aVoid) {
+            mXTVFramesSeekBar.updateFramesView();
         }
     }
 
@@ -523,21 +521,5 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         outState.putLong(FRAMES_SEEKBAR_RIGHT_POSITION, mRightPosition);
         outState.putLong(TRIMMED_VIDEO_DURATION, mTrimmedVideoLength);
         Log.i(TAG, "onSaveInstanceState(),mCurrentPosition:" + mCurrentPosition + ",mVideoDuration:" + mVideoDuration + ",mLeftPosition:" + mLeftPosition + ",mRightPosition:" + mRightPosition);
-    }
-
-    public void setVideoHeightIn(int videoHeightIn) {
-        mVideoHeightIn = videoHeightIn;
-    }
-
-    public void setVideoWidthIn(int videoWidthIn) {
-        mVideoWidthIn = videoWidthIn;
-    }
-
-    public void setVideoWidthOut(int videoWidthOut) {
-        mVideoWidthOut = videoWidthOut;
-    }
-
-    public void setVideoHeightOut(int videoHeightOut) {
-        mVideoHeightOut = videoHeightOut;
     }
 }

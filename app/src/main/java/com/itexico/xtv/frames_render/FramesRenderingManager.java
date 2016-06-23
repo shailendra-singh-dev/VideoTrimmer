@@ -5,14 +5,12 @@ import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.util.Log;
 
-import com.itexico.xtv.R;
+import com.itexico.xtv.cache.ImageCache;
 import com.itexico.xtv.model.MediaInfo;
 import com.itexico.xtv.util.AppConst;
 import com.itexico.xtv.util.AppUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -26,6 +24,8 @@ public class FramesRenderingManager {
     public interface ICurrentFrameRunnable{
         void onCurrentFrameReceived(final Bitmap currentFrame);
     }
+
+    final private ImageCache mImageCache = new ImageCache(0);
 
     private static final String TAG = FramesRenderingManager.class.getSimpleName();
 
@@ -83,28 +83,17 @@ public class FramesRenderingManager {
 
     }
 
-    public List<Bitmap> fetchAllVideoFrames(final Context context) {
+    public void fetchAllVideoFrames(final Context context) {
         int numberOfFramesToDraw = AppUtils.getNumberOfFramesToDraw(context);
-        ArrayList<Bitmap> bitmapArrayList = new ArrayList<>();
-        int frameWidth = context.getResources().getDimensionPixelSize(R.dimen.frames_thumbnail_width);
-        int frameWidthCount = 0;
-        final int totalWidth = AppUtils.getScreenWidth();
-
         long mDuration = mMediaInfo.getDuration()* AppConst.MS_TO_MACROSEC_FACTOR;
         long eachFrameTimeStamp = mDuration/numberOfFramesToDraw;
         Log.i(TAG, "fetchAllVideoFrames eachFrameTimeStamp:" + eachFrameTimeStamp + ",numberOfFramesToDraw" + numberOfFramesToDraw);
-        for (long i = eachFrameTimeStamp; i < mDuration; i += eachFrameTimeStamp) {
-            if (frameWidthCount < totalWidth) {
-                Bitmap bitmap = mMediaMetadataRetriever.getFrameAtTime(i, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-                Log.i(TAG, "fetchAllVideoFrames bitmap:" + bitmap);
-                bitmapArrayList.add(bitmap);
-                frameWidthCount += frameWidth;
-            } else {
-                break;
-            }
+        for (int counter = 0; counter < numberOfFramesToDraw; counter++) {
+            Bitmap bitmap = mMediaMetadataRetriever.getFrameAtTime(eachFrameTimeStamp, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            final String imageCacheKey = String.valueOf(counter);
+            mImageCache.putBitmap(imageCacheKey, bitmap);
+            eachFrameTimeStamp += eachFrameTimeStamp;
         }
-        Log.i(TAG, "fetchAllVideoFrames size:" + bitmapArrayList.size());
-        return bitmapArrayList;
     }
 
     public Bitmap getCurrentFrame(long frameTimeLong) {
@@ -147,4 +136,11 @@ public class FramesRenderingManager {
         mThreadPool = null;
     }
 
+    public Bitmap getFrame(String imageCacheKey){
+        return mImageCache.getBitmap(imageCacheKey);
+    }
+
+    public void clearCache(){
+        mImageCache.clearCache();
+    }
 }

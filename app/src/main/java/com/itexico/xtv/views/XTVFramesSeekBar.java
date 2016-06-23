@@ -17,10 +17,8 @@ import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import com.itexico.xtv.R;
+import com.itexico.xtv.frames_render.FramesRenderingManager;
 import com.itexico.xtv.util.AppUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class XTVFramesSeekBar extends ImageView {
@@ -33,6 +31,9 @@ public class XTVFramesSeekBar extends ImageView {
     //params
     private Bitmap mThumbSliceLeft = null;
     private Bitmap mThumbSliceRight = null;
+
+    final private FramesRenderingManager mFramesRenderingManager = FramesRenderingManager.getFramesRenderingManagerInstance();
+
     final private Bitmap mThumbCurrentVideoPosition = BitmapFactory.decodeResource(getResources(), R.drawable.seek_thumb_normal);
     final private Bitmap mDefaultFrame = BitmapFactory.decodeResource(getResources(), R.drawable.lo_video_placeholder);
 
@@ -78,7 +79,6 @@ public class XTVFramesSeekBar extends ImageView {
     private Rect mDrawRect = new Rect();
 
     private RectF mRectF = null;
-    private ArrayList<Bitmap> mFramesList = null;
     private int mLeftProgressMS;
     private int mRightProgressMS;
     private float mTotalWidth;
@@ -103,6 +103,7 @@ public class XTVFramesSeekBar extends ImageView {
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
+        Log.i(TAG, "onWindowFocusChanged()");
         init(getContext());
     }
 
@@ -112,7 +113,6 @@ public class XTVFramesSeekBar extends ImageView {
 
     private void init(Context context) {
         mTotalWidth = getWidth();
-        mFramesList = new ArrayList<Bitmap>();
         mContext = context;
         mFillPaint.setColor(Color.LTGRAY);
         mFillPaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -120,10 +120,7 @@ public class XTVFramesSeekBar extends ImageView {
         mFramesWidth = context.getResources().getDimensionPixelSize(R.dimen.frames_thumbnail_width);
 
         mRectF = new RectF(mThumbSliceLeftX - mThumbSliceHalfWidth, 0, mThumbSliceRightX, mProgressTop);
-        int numberOfFramesToDraw = AppUtils.getNumberOfFramesToDraw(mContext);
-        for (int i = 0; i < numberOfFramesToDraw; i++) {
-            mFramesList.add(mDefaultFrame);
-        }
+
         mThumbSliceLeft = AppUtils.drawableToBitmap(getContext(), R.drawable.rectangle_thumbnail);
         mThumbSliceRight = AppUtils.drawableToBitmap(getContext(), R.drawable.rectangle_thumbnail);
 
@@ -149,7 +146,6 @@ public class XTVFramesSeekBar extends ImageView {
         calculateRightProgressCoOrdinates();
 
         Log.i(TAG, "SHAIL init() ,mThumbSliceLeftX:" + mThumbSliceLeftX + ",mThumbSliceRightX:" + mThumbSliceRightX + ",mTotalWidth:" + mTotalWidth);
-        invalidate();
     }
 
     public void setSeekBarChangeListener(SeekBarChangeListener scl) {
@@ -203,9 +199,6 @@ public class XTVFramesSeekBar extends ImageView {
     }
 
     private void drawFrames(Canvas canvas) {
-        if (null == mFramesList || mFramesList.isEmpty()) {
-            return;
-        }
         int rowWidth = getMeasuredWidth();
         int itemWidth = mFramesWidth;
         int frameHeight = getMeasuredHeight();
@@ -218,21 +211,13 @@ public class XTVFramesSeekBar extends ImageView {
             canvas.translate(xOffset, 0);
             canvas.clipRect(0, 0, itemWidth, frameHeight);
 
-            if (count >= mFramesList.size()) {
-                count = mFramesList.size() - 1;
-            }
-
-            Bitmap cachedBitmap = mFramesList.get(count);
-            // Pass Program as parameter here.
-            Bitmap bitmapToDraw;
+            final String imageCacheKey = String.valueOf(count);
+            Bitmap cachedBitmap = mFramesRenderingManager.getFrame(imageCacheKey);
+            Log.i(TAG, "drawFrames() imageCacheKey:"+imageCacheKey+",cachedBitmap:" + cachedBitmap);
             if (null != cachedBitmap) {
-                bitmapToDraw = cachedBitmap;
+                drawScaledBitmap(cachedBitmap, mFramesWidth, frameHeight, canvas);
             } else {
-                bitmapToDraw = mDefaultFrame;
-            }
-            if (null != bitmapToDraw) {
-                Log.i(TAG, "drawFrames() count:" + count);
-                drawScaledBitmap(bitmapToDraw, mFramesWidth, frameHeight, canvas);
+                drawScaledBitmap(mDefaultFrame, mFramesWidth, frameHeight, canvas);
             }
             canvas.restore();
 
@@ -430,7 +415,7 @@ public class XTVFramesSeekBar extends ImageView {
     }
 
     private void calculateRightProgressCoOrdinates(){
-        if (mRightProgressMS > mThumbSliceLeftValueMS + mProgressMinDiffMS) {
+        if (mRightProgressMS >= mThumbSliceLeftValueMS + mProgressMinDiffMS) {
             mThumbSliceRightX = calculateCorrds(mRightProgressMS);
         }
         notifySeekBarValueChanged(-1, mSelectedThumb);
@@ -499,37 +484,26 @@ public class XTVFramesSeekBar extends ImageView {
         void onCurrentFrameUpdated(int currentTime);
     }
 
-    public void updateFramesView(List<Bitmap> frames) {
-        if (null == mFramesList) {
-            return;
-        }
-        mFramesList.clear();
-        mFramesList.addAll(frames);
+    public void updateFramesView() {
         ViewCompat.postInvalidateOnAnimation(this);
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        Log.i(TAG, "onAttachedToWindow()");
     }
 
     @Override
     protected void onDetachedFromWindow() {
+        Log.i(TAG, "onDetachedFromWindow()");
         super.onDetachedFromWindow();
         cleanUpResources();
     }
 
     public void cleanUpResources() {
         Log.i(TAG, "cleanUpResources()");
-        if (null != mFramesList) {
-            for (final Bitmap bitmap : mFramesList) {
-                if (null != bitmap) {
-                    bitmap.recycle();
-                }
-            }
-            mFramesList.clear();
-            mFramesList = null;
-        }
+        mFramesRenderingManager.clearCache();
         if (null != mDefaultFrame) {
             mDefaultFrame.recycle();
         }

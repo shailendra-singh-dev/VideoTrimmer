@@ -17,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -58,7 +57,6 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
     private VideoView mVideoView;
 
     private ImageButton mPlaybackPlayButton;
-    private ImageView mPlaybackCurrentFrame;
 
     private long mCurrentPosition;
     private long mLeftPosition;
@@ -111,27 +109,10 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         mPlaybackPlayButton = (ImageButton) videoViewController.findViewById(R.id.playback_play);
         mPlaybackPlayButton.setOnClickListener(this);
 
-        mPlaybackCurrentFrame = (ImageView) videoViewController.findViewById(R.id.playback_current_frame);
-
         mPlaybackSeekBar = (PlaybackSeekBar) editVideoView.findViewById(R.id.playback_seek);
         mPlaybackSeekBar.setIPlaybackOnSeekBarChangeListener(this);
 
         mXTVFramesSeekBar = (XTVFramesSeekBar) editVideoView.findViewById(R.id.video_slice_seekbar);
-//        if(null != savedInstanceState){
-//            mCurrentPosition = savedInstanceState.getLong(PLAYBACK_SEEKBAR_CURRENT_POSITION);
-//            mVideoDuration = savedInstanceState.getLong(VIDEO_DURATION);
-//
-//            mLeftPosition = savedInstanceState.getLong(FRAMES_SEEKBAR_LEFT_POSITION);
-//            mRightPosition =  savedInstanceState.getLong(FRAMES_SEEKBAR_RIGHT_POSITION);
-//            Log.i(TAG, "SHAIL onCreateView(),mCurrentPosition:"+mCurrentPosition+",mVideoDuration:"+mVideoDuration+",mLeftPosition:"+mLeftPosition+",mRightPosition:"+mRightPosition);
-//        }
-//
-//        mPlaybackSeekBar.setMax((int) mVideoDuration);
-//        mPlaybackSeekBar.setProgress((int) mCurrentPosition);
-//
-//        mXTVFramesSeekBar.setLeftProgress((int) mLeftPosition);
-//        mXTVFramesSeekBar.setRightProgress((int) mRightPosition);
-//
 
         final LinearLayout playbackVideoInfo = (LinearLayout) editVideoView.findViewById(R.id.playback_video_info);
         mOriginalVideoInfoView = (TextView) playbackVideoInfo.findViewById(R.id.original_video_info);
@@ -161,7 +142,6 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
             mPlaybackPlayButton.setVisibility(View.VISIBLE);
         } else {
             mPlaybackPlayButton.setVisibility(View.GONE);
-            mPlaybackCurrentFrame.setVisibility(View.GONE);
 
             mVideoView.seekTo(mXTVFramesSeekBar.getLeftProgress());
             mVideoView.start();
@@ -512,14 +492,5 @@ public class EditVideoFragment extends Fragment implements View.OnClickListener,
         super.onStart();
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putLong(PLAYBACK_SEEKBAR_CURRENT_POSITION, mCurrentPosition);
-        outState.putLong(VIDEO_DURATION, mVideoDuration);
-        outState.putLong(FRAMES_SEEKBAR_LEFT_POSITION, mLeftPosition);
-        outState.putLong(FRAMES_SEEKBAR_RIGHT_POSITION, mRightPosition);
-        outState.putLong(TRIMMED_VIDEO_DURATION, mTrimmedVideoLength);
-        Log.i(TAG, "onSaveInstanceState(),mCurrentPosition:" + mCurrentPosition + ",mVideoDuration:" + mVideoDuration + ",mLeftPosition:" + mLeftPosition + ",mRightPosition:" + mRightPosition);
-    }
+
 }

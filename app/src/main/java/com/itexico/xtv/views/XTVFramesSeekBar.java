@@ -479,7 +479,7 @@ public class XTVFramesSeekBar extends ImageView {
     }
 
     public interface SeekBarChangeListener {
-        void SeekBarValueChanged(int actionId, int selectedThumb, int leftThumb, int rightThumb);
+        void SeekBarValueChanged(int actionId, int selectedThumb, int leftThumbXInMS, int rightThumbXInMS);
 
         void onCurrentFrameUpdated(int currentTime);
     }

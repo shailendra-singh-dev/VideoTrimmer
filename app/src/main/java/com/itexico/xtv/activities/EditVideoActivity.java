@@ -23,6 +23,7 @@ import org.m4m.android.AudioFormatAndroid;
 import org.m4m.android.VideoFormatAndroid;
 import org.m4m.domain.Pair;
 
+import java.io.File;
 import java.io.IOException;
 
 
@@ -36,13 +37,9 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     private String mSelectedVideoPath;
 
     private EditVideoFragment mEditVideoFragment;
-    private String mSelectedVideoUriPath;
 
-    public static final int TRIMMED_VIDEO_DEFAULT_WIDTH = 1920;
-    public static final int TRIMMED_VIDEO_DEFAULT_HEIGHT = 1280;
-
-    protected int mVideoWidthOut = 0;//TRIMMED_VIDEO_DEFAULT_WIDTH;
-    protected int mVideoHeightOut = 0 ;//TRIMMED_VIDEO_DEFAULT_HEIGHT;
+    protected int mVideoWidthOut = 0;
+    protected int mVideoHeightOut = 0 ;
 
     protected int mVideoWidthIn = 0;
     protected int mVideoHeightIn = 0;
@@ -91,7 +88,6 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
         close.setOnClickListener(this);
 
         mSelectedVideoPath = getIntent().getStringExtra(INPUT_MEDIA_PATH);
-        mSelectedVideoUriPath = getIntent().getStringExtra(INPUT_MEDIA_URI_PATH);
         Log.i(TAG, " onCreate() ,mSelectedVideoPath:" + mSelectedVideoPath);
 
     }
@@ -131,11 +127,18 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume()");
         mEditVideoFragment.updateView();
         final VideoAudioVideoEncoderAsyncTask videoAudioVideoEncoderAsyncTask = new VideoAudioVideoEncoderAsyncTask();
         videoAudioVideoEncoderAsyncTask.execute();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "onPause()");
+        cleanAudioVideoEncodingDecodingResources();
+    }
 
     private class VideoTrimmingAsyncTask extends AsyncTask<Void, Void, Void> {
 
@@ -284,18 +287,21 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     }
 
     protected void getActivityInputs() {
+        Log.i(TAG, "getActivityInputs()");
         mSrcMediaName1 = mSelectedVideoPath;
         mDstMediaPath = AppUtils.getTargetFileName(mSelectedVideoPath);
         mMediaUri1 = new org.m4m.Uri(mSelectedVideoPath);
     }
 
     protected void transcode() throws Exception {
+        Log.i(TAG, "transcode()");
         mAndroidMediaObjectFactory = new AndroidMediaObjectFactory(getApplicationContext());
         mMediaComposer = new org.m4m.MediaComposer(mAndroidMediaObjectFactory, mIProgressListener);
         setTranscodeParameters();
     }
 
     protected void setTranscodeParameters() throws IOException {
+        Log.i(TAG, "setTranscodeParameters()");
 
         mMediaComposer.addSourceFile(mMediaUri1);
         mMediaComposer.setTargetFile(mDstMediaPath);
@@ -309,12 +315,13 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
         mSegmentStartFrom = mEditVideoFragment.getTrimmedVideoStartTime() * 1000;//1000;
         mSegmentEndTo = mEditVideoFragment.getTrimmedVideoEndTime() * 1000;//2000;
 
-        Log.i(TAG,"updateSegments() called,mSegmentStartFrom:"+mSegmentStartFrom+",mSegmentEndTo"+mSegmentEndTo);
+        Log.i(TAG, "updateSegments() called,mSegmentStartFrom:" + mSegmentStartFrom + ",mSegmentEndTo" + mSegmentEndTo);
 
         mediaFile.addSegment(new Pair<Long, Long>(mSegmentStartFrom, mSegmentEndTo));
     }
 
     protected void configureVideoEncoder(org.m4m.MediaComposer mediaComposer, int width, int height) {
+        Log.i(TAG, "configureVideoEncoder()");
 
         VideoFormatAndroid videoFormat = new VideoFormatAndroid(videoMimeType, width, height);
 
@@ -326,6 +333,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     }
 
     protected void configureAudioEncoder(org.m4m.MediaComposer mediaComposer) {
+        Log.i(TAG, "configureAudioEncoder()");
         /**
          * TODO: Audio resampling is unsupported by current m4m release
          * Output sample rate and channel count are the same as for input.
@@ -339,6 +347,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     }
 
     private boolean startTranscode() {
+        Log.i(TAG, "startTranscode()");
         boolean isSuccessful = true;
         try {
             updateSegments();
@@ -351,5 +360,14 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
             isSuccessful = false;
         }
         return isSuccessful;
+    }
+
+    private void cleanAudioVideoEncodingDecodingResources(){
+        Log.i(TAG, "cleanAudioVideoEncodingDecodingResources()");
+        File f = new File(mDstMediaPath);
+        if(f.exists()) {
+          boolean isFileDeleted = f.delete();
+          Log.i(TAG,"cleanAudioVideoEncodingDecodingResources(),isFileDeleted:"+isFileDeleted);
+        }
     }
 }

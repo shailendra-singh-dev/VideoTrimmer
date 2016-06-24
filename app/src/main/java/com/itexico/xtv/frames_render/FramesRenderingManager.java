@@ -91,7 +91,9 @@ public class FramesRenderingManager {
         for (int counter = 0; counter < numberOfFramesToDraw; counter++) {
             Bitmap bitmap = mMediaMetadataRetriever.getFrameAtTime(eachFrameTimeStamp, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             final String imageCacheKey = String.valueOf(counter);
-            mImageCache.putBitmap(imageCacheKey, bitmap);
+            if(null != imageCacheKey){
+                mImageCache.putBitmap(imageCacheKey, bitmap);
+            }
             eachFrameTimeStamp += eachFrameTimeStamp;
         }
     }

@@ -9,13 +9,13 @@ import android.util.Log;
 /**
  * Created by iTexico Developer on 6/23/2016.
  */
-public class ImageCache {
+public class XTVImageCache {
 
-    private static final String LOG = ImageCache.class.getSimpleName();
+    private static final String LOG = XTVImageCache.class.getSimpleName();
 
     private LruCache<String, Bitmap> mBitmapCache = null;
 
-    public ImageCache(final int inputCacheSize) {
+    public XTVImageCache(final int inputCacheSize) {
         int cacheSize = inputCacheSize;
         if (cacheSize <= 0) {
             final int maxMemory = (int)(Runtime.getRuntime().maxMemory());

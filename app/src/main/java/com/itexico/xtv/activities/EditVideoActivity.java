@@ -30,6 +30,7 @@ import java.io.IOException;
 public class EditVideoActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String INPUT_MEDIA_PATH = "input_media_path";
+    public static final String TRIMMED_VIDEO_MAX_LIMIT = "trimmed_video_max_limit";
 
     private static final String TAG = EditVideoActivity.class.getSimpleName();
     public static final String INPUT_MEDIA_URI_PATH = "input_media_uri";
@@ -364,6 +365,9 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
 
     private void cleanAudioVideoEncodingDecodingResources(){
         Log.i(TAG, "cleanAudioVideoEncodingDecodingResources()");
+        if(null == mDstMediaPath || mDstMediaPath.isEmpty()){
+            return;
+        }
         File f = new File(mDstMediaPath);
         if(f.exists()) {
           boolean isFileDeleted = f.delete();

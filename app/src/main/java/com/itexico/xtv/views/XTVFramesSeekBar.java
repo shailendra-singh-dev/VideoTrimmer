@@ -100,12 +100,6 @@ public class XTVFramesSeekBar extends ImageView {
         init(context);
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-        super.onWindowFocusChanged(hasWindowFocus);
-        Log.i(TAG, "onWindowFocusChanged()");
-        init(getContext());
-    }
 
     public void invalidateView(Context context){
         init(context);
@@ -391,7 +385,7 @@ public class XTVFramesSeekBar extends ImageView {
         invalidate();
         if (mSeekBarChangeListener != null) {
             calculateThumbValue();
-            mSeekBarChangeListener.SeekBarValueChanged(actionId, selectedThumb, mThumbSliceLeftValueMS, mThumbSliceRightValueMS);
+            mSeekBarChangeListener.onSeekBarValueChanged(actionId, selectedThumb, mThumbSliceLeftValueMS, mThumbSliceRightValueMS);
         }
     }
 
@@ -479,7 +473,7 @@ public class XTVFramesSeekBar extends ImageView {
     }
 
     public interface SeekBarChangeListener {
-        void SeekBarValueChanged(int actionId, int selectedThumb, int leftThumbXInMS, int rightThumbXInMS);
+        void onSeekBarValueChanged(int actionId, int selectedThumb, int leftThumbXInMS, int rightThumbXInMS);
 
         void onCurrentFrameUpdated(int currentTime);
     }

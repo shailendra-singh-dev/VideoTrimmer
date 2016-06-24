@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.util.Log;
 
-import com.itexico.xtv.cache.ImageCache;
+import com.itexico.xtv.cache.XTVImageCache;
 import com.itexico.xtv.model.MediaInfo;
 import com.itexico.xtv.util.AppConst;
 import com.itexico.xtv.util.AppUtils;
@@ -25,7 +25,7 @@ public class FramesRenderingManager {
         void onCurrentFrameReceived(final Bitmap currentFrame);
     }
 
-    final private ImageCache mImageCache = new ImageCache(0);
+    final private XTVImageCache mXTVImageCache = new XTVImageCache(0);
 
     private static final String TAG = FramesRenderingManager.class.getSimpleName();
 
@@ -92,7 +92,7 @@ public class FramesRenderingManager {
             Bitmap bitmap = mMediaMetadataRetriever.getFrameAtTime(eachFrameTimeStamp, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             final String imageCacheKey = String.valueOf(counter);
             if(null != imageCacheKey){
-                mImageCache.putBitmap(imageCacheKey, bitmap);
+                mXTVImageCache.putBitmap(imageCacheKey, bitmap);
             }
             eachFrameTimeStamp += eachFrameTimeStamp;
         }
@@ -139,10 +139,10 @@ public class FramesRenderingManager {
     }
 
     public Bitmap getFrame(String imageCacheKey){
-        return mImageCache.getBitmap(imageCacheKey);
+        return mXTVImageCache.getBitmap(imageCacheKey);
     }
 
     public void clearCache(){
-        mImageCache.clearCache();
+        mXTVImageCache.clearCache();
     }
 }

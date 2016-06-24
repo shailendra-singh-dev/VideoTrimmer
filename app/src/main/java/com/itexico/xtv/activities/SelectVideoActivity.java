@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.itexico.xtv.R;
 import com.itexico.xtv.enums.SCREEN;
+import com.itexico.xtv.fragments.EditVideoFragment;
 import com.itexico.xtv.util.AppUtils;
 
 public class SelectVideoActivity extends AppCompatActivity {
@@ -130,11 +131,7 @@ public class SelectVideoActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(this, EditVideoActivity.class);
                 intent.putExtra(EditVideoActivity.INPUT_MEDIA_PATH, selectedVideoPath);
-
-//                intent.putExtra(EditVideoActivity.INPUT_MEDIA_URI_PATH, selectedVideoUri.toString());
-//
-//                intent.putExtra(EditVideoActivity.OUPUT_VIDEO_WIDTH,TRIMMED_VIDEO_DEFAULT_WIDTH);
-//                intent.putExtra(EditVideoActivity.OUPUT_VIDEO_HEIGHT,TRIMMED_VIDEO_DEFAULT_HEIGHT);
+                intent.putExtra(EditVideoActivity.TRIMMED_VIDEO_MAX_LIMIT, EditVideoFragment.PROGRESS_MAX_DIFFERENCE);
 
                 startActivity(intent);
             }

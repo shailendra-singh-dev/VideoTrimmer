@@ -311,6 +311,7 @@ public class XTVFramesSeekBar extends ImageView {
                     }
                     Log.i(TAG,"SHAIL onTouchEvent mActionDownX:"+ mActionDownX);
                     break;
+
                 case MotionEvent.ACTION_MOVE:
                     actionId = MotionEvent.ACTION_MOVE;
                     //Movement when selected Video duration is more then limit time..
@@ -319,6 +320,10 @@ public class XTVFramesSeekBar extends ImageView {
                     int timeDifference = mThumbSliceRightValueMS - mThumbSliceLeftValueMS;
                     float distanceMoved = mActionMoveX - mActionDownX;
                     boolean isLeftMovement = distanceMoved < 0;
+                    float rightThumbLimit = mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMinDiffPixels;
+                    float leftThumbLimit = mThumbSliceRightX - mThumbSliceHalfWidth - mProgressMinDiffPixels;
+                    Log.i(TAG,"TEST onTouchEvent,mx:"+mx+",rightThumbLimit:"+rightThumbLimit+",leftThumbLimit:"+leftThumbLimit);
+
                     if(timeDifference >= mProgressMaxDiffMS ){
                         if((mSelectedThumb == SELECT_THUMB_RIGHT) && (!isLeftMovement)){
                             mThumbSliceRightX = mx;
@@ -329,8 +334,8 @@ public class XTVFramesSeekBar extends ImageView {
                             mThumbSliceLeftX = mx;
                             mThumbSliceRightX = mThumbSliceLeftX + mProgressMaxDiffPixels;
                             Log.i(TAG,"TEST onTouchEvent timeDifference >= mProgressMaxDiffMS timeDifference:mSelectedThumb == SELECT_THUMB_LEFT,mThumbSliceLeftX:"+mThumbSliceLeftX+",mThumbSliceRightX:"+mThumbSliceRightX+",timeDifference:"+timeDifference);
-                        }else if((mx <= mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_RIGHT) ||
-                                (mx >= mThumbSliceRightX - mThumbSliceHalfWidth - mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_LEFT)) {
+                        }else if((mx <= mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_RIGHT && isLeftMovement) ||
+                                (mx >= mThumbSliceRightX - mThumbSliceHalfWidth - mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_LEFT && !isLeftMovement)) {
                             mSelectedThumb = SELECT_THUMB_NON;
                             Log.i(TAG,"TEST onTouchEvent timeDifference >= mProgressMaxDiffMS MIN Difference reached.."+",timeDifference:"+timeDifference);
                         }else if(mSelectedThumb == SELECT_THUMB_LEFT) {
@@ -342,20 +347,22 @@ public class XTVFramesSeekBar extends ImageView {
                         }
                     }
                     ///Movement when MIN is reached..
-                    else if ((mx <= mThumbSliceLeftX + mThumbSliceHalfWidth + mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_RIGHT) ||
-                            (mx >= mThumbSliceRightX - mThumbSliceHalfWidth - mProgressMinDiffPixels && mSelectedThumb == SELECT_THUMB_LEFT)) {
+                    else if ((mx == rightThumbLimit && mSelectedThumb == SELECT_THUMB_RIGHT  && isLeftMovement) ||
+                            (mx == leftThumbLimit && mSelectedThumb == SELECT_THUMB_LEFT && !isLeftMovement)) {
                         mSelectedThumb = SELECT_THUMB_NON;
                         Log.i(TAG,"TEST onTouchEvent MIN Difference reached..");
+                        return true;
                     }
                     //Movement without any Condition...
-                    else if (mSelectedThumb == SELECT_THUMB_LEFT) {
+                    else if (mx < leftThumbLimit && mSelectedThumb == SELECT_THUMB_LEFT) {
                         mThumbSliceLeftX = mx;
                         Log.i(TAG,"TEST onTouchEvent mSelectedThumb == SELECT_THUMB_LEFT:");
-                    } else if (mSelectedThumb == SELECT_THUMB_RIGHT) {
+                    } else if (mx > rightThumbLimit && mSelectedThumb == SELECT_THUMB_RIGHT) {
                         mThumbSliceRightX = mx;
                         Log.i(TAG,"TEST onTouchEvent mSelectedThumb == SELECT_THUMB_RIGHT:");
                     }
                     break;
+
                 case MotionEvent.ACTION_UP:
                     actionId = MotionEvent.ACTION_UP;
                     mSelectedThumb = SELECT_THUMB_NON;

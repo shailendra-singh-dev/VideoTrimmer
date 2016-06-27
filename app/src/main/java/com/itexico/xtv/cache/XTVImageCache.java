@@ -78,18 +78,22 @@ public class XTVImageCache {
     /**
      * function to insert the bitmap into the cache
      *
-     * @param key - unique identifier for the bitmap.
+     * @param key    - unique identifier for the bitmap.
      * @param bitmap - the bitmap to be stored.
      */
     public void putBitmap(final String key, final Bitmap bitmap) {
         Log.i(LOG, " key: " + key);
-        synchronized (mBitmapCache) {
-            if (mBitmapCache.get(key) == null) {
-                mBitmapCache.put(key, bitmap);
-                Log.i(LOG, " insert: " + key);
-            } else {
-                Log.i(LOG, " already in cache " + key);
+        try {
+            synchronized (mBitmapCache) {
+                if (mBitmapCache.get(key) == null) {
+                    mBitmapCache.put(key, bitmap);
+                    Log.i(LOG, " insert: " + key);
+                } else {
+                    Log.i(LOG, " already in cache " + key);
+                }
             }
+        } catch (NullPointerException nullPointerException) {
+            nullPointerException.printStackTrace();
         }
     }
 

@@ -68,6 +68,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     private long mSegmentStartFrom = 0;
     private long mSegmentEndTo = 0;
     protected AndroidMediaObjectFactory mAndroidMediaObjectFactory;
+    private boolean mIsVideoEditingPerformed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,15 +139,16 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     protected void onPause() {
         super.onPause();
         Log.i(TAG, "onPause()");
-        cleanAudioVideoEncodingDecodingResources();
+        if(!mIsVideoEditingPerformed){
+            cleanAudioVideoEncodingDecodingResources();
+        }
     }
 
-    private class VideoTrimmingAsyncTask extends AsyncTask<Void, Void, Void> {
+    private class VideoTrimmingAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
         @Override
-        protected Void doInBackground(Void... params) {
-            startTranscode();
-            return null;
+        protected Boolean doInBackground(Void... params) {
+            return  startTranscode();
         }
 
     }
@@ -182,6 +184,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        mIsVideoEditingPerformed =true;
                         Log.i(TAG, "onMediaStart");
                         mProgressDialog = ProgressDialog.show(EditVideoActivity.this, "Please wait ...", "Trimming Video ...", true);
                         mProgressDialog.setCancelable(true);
@@ -364,7 +367,7 @@ public class EditVideoActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void cleanAudioVideoEncodingDecodingResources(){
-        Log.i(TAG, "cleanAudioVideoEncodingDecodingResources()");
+        Log.i(TAG, "cleanAudioVideoEncodingDecodingResources(),mDstMediaPath:"+mDstMediaPath);
         if(null == mDstMediaPath || mDstMediaPath.isEmpty()){
             return;
         }
